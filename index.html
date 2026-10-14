@@ -166,14 +166,16 @@ body{margin:0}
 .std tr.x td{color:var(--muted)}
 .std tr.x .pill{background:transparent;border:1px solid var(--line)}
 .prow .btn{width:100%;padding:0 8px}
-@media (min-width:900px){.liga{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}.liga .ltab{position:sticky;top:calc(64px + env(safe-area-inset-top,0px))}}
+@media (min-width:900px){.ko.c3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.acts label{font-weight:600}
+@media (min-width:900px){.liga{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}.liga .ltab{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));max-height:calc(100vh - 80px - env(safe-area-inset-top,0px));overflow-y:auto}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast" role="status" hidden></div>
 <script src="config.js"></script>
-<script type="application/json" id="app-state">{"v":2,"third":true,"results":{},"ko":{},"players":[{"id":"p1","name":"Jugador 1","team":"","group":"A"},{"id":"p2","name":"Jugador 2","team":"","group":"A"},{"id":"p3","name":"Jugador 3","team":"","group":"A"},{"id":"p4","name":"Jugador 4","team":"","group":"A"},{"id":"p5","name":"Jugador 5","team":"","group":"A"},{"id":"p6","name":"Jugador 6","team":"","group":"A"},{"id":"p7","name":"Jugador 7","team":"","group":"A"},{"id":"p8","name":"Jugador 8","team":"","group":"A"}]}</script>
+<script type="application/json" id="app-state">{"v":3,"q":4,"third":true,"results":{},"ko":{},"players":[{"id":"p1","name":"Jugador 1","team":"","group":"A"},{"id":"p2","name":"Jugador 2","team":"","group":"A"},{"id":"p3","name":"Jugador 3","team":"","group":"A"},{"id":"p4","name":"Jugador 4","team":"","group":"A"},{"id":"p5","name":"Jugador 5","team":"","group":"A"},{"id":"p6","name":"Jugador 6","team":"","group":"A"},{"id":"p7","name":"Jugador 7","team":"","group":"A"},{"id":"p8","name":"Jugador 8","team":"","group":"A"}]}</script>
 <script id="app-script">
 (function(){
 'use strict';
@@ -182,12 +184,24 @@ var FONTS='https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&
 var RESET=':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}';
 var GROUPS=['A'];
 var TEAMS=['Argentina','Brasil','Uruguay','Chile','Colombia','Paraguay','México','Estados Unidos','España','Italia','Francia','Alemania','Inglaterra','Holanda','Portugal','Bélgica','Croacia','Suecia','Dinamarca','República Checa','Costa de Marfil','Camerún','Japón','Corea del Sur','Real Madrid','Barcelona','Valencia','Milan','Inter','Juventus','Roma','Lazio','Manchester United','Chelsea','Arsenal','Liverpool','Bayern Múnich','Borussia Dortmund','Ajax','PSV','Lyon','Marsella','Boca Juniors','River Plate','Independiente','Racing','San Lorenzo'];
-var KO=[
-  {id:'sf1',label:'Semifinal 1',a:['G','A',1],b:['G','A',4]},
-  {id:'sf2',label:'Semifinal 2',a:['G','A',2],b:['G','A',3]},
-  {id:'final',label:'Final',a:['W','sf1'],b:['W','sf2']},
-  {id:'third',label:'Tercer puesto',a:['L','sf1'],b:['L','sf2']}
-];
+function buildKO(q){
+  var k=[];
+  if(q===8){
+    k.push({id:'qf1',label:'Cuartos 1',a:['G','A',1],b:['G','A',8]},
+           {id:'qf2',label:'Cuartos 2',a:['G','A',4],b:['G','A',5]},
+           {id:'qf3',label:'Cuartos 3',a:['G','A',2],b:['G','A',7]},
+           {id:'qf4',label:'Cuartos 4',a:['G','A',3],b:['G','A',6]},
+           {id:'sf1',label:'Semifinal 1',a:['W','qf1'],b:['W','qf2']},
+           {id:'sf2',label:'Semifinal 2',a:['W','qf3'],b:['W','qf4']});
+  }else{
+    k.push({id:'sf1',label:'Semifinal 1',a:['G','A',1],b:['G','A',4]},
+           {id:'sf2',label:'Semifinal 2',a:['G','A',2],b:['G','A',3]});
+  }
+  k.push({id:'final',label:'Final',a:['W','sf1'],b:['W','sf2']},
+         {id:'third',label:'Tercer puesto',a:['L','sf1'],b:['L','sf2']});
+  return k;
+}
+var KO=buildKO(4);
 var app=document.getElementById('app');
 var S=loadState();
 var K={};
@@ -245,6 +259,7 @@ function standings(g){
 }
 
 function computeKO(){
+  KO=buildKO(S.q);
   var out={}, st={}, done={};
   GROUPS.forEach(function(g){done[g]=groupTotals(g).done; st[g]=done[g]?standings(g):null;});
   KO.forEach(function(m){
@@ -311,14 +326,14 @@ function matchRow(a,b){
 function groupHtml(g){
   var rows=standings(g), tot=groupTotals(g), f=fixture(g);
   var body=rows.map(function(r,i){
-    var cls=i<4?'q':(tot.done?'x':'');
+    var cls=i<S.q?'q':(tot.done?'x':'');
     return '<tr'+(cls?' class="'+cls+'"':'')+'><td class="pos"><span class="pill">'+(i+1)+'</span></td><td class="who">'+nameHtml(r.id)+'</td><td>'+r.pj+'</td><td>'+r.g+'</td><td>'+r.e+'</td><td>'+r.p+'</td><td class="opt">'+r.gf+'</td><td class="opt">'+r.gc+'</td><td>'+(r.gf-r.gc>0?'+':'')+(r.gf-r.gc)+'</td><td class="pts">'+r.pts+'</td></tr>';
   }).join('');
   var fx=f.map(function(r){
     return '<div class="fecha"><h4>Fecha '+r.n+'</h4>'+(r.bye?'<span>Libre: '+esc(P(r.bye).name)+'</span>':'')+'</div>'+r.matches.map(function(m){return matchRow(m[0],m[1]);}).join('');
   }).join('');
   return '<section class="liga"><div class="ltab"><h2>Tabla de posiciones</h2><div class="tablewrap"><table class="std"><thead><tr><th></th><th class="l">Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th class="opt">GF</th><th class="opt">GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>'+body+'</tbody></table></div>'
-    +'<div class="legend"><span class="pill" style="background:var(--accent-soft);color:var(--accent)">4</span> Los 4 primeros pasan a semifinales'+(tot.done?' · el resto queda eliminado':'')+' · '+tot.played+' de '+tot.tot+' partidos jugados</div></div>'
+    +'<div class="legend"><span class="pill" style="background:var(--accent-soft);color:var(--accent)">'+S.q+'</span> Los '+S.q+' primeros pasan a '+(S.q===8?'cuartos de final':'semifinales')+(tot.done?' · el resto queda eliminado':'')+' · '+tot.played+' de '+tot.tot+' partidos jugados</div></div>'
     +'<div class="fixture"><h2>Fixture</h2>'+fx+'</div></section>';
 }
 
@@ -348,7 +363,7 @@ function nextHtml(){
 }
 
 function rulesHtml(){
-  return '<div class="rules"><p>Un solo grupo, todos contra todos: 3 puntos por victoria, 1 por empate. Desempate por diferencia de gol, goles a favor y resultado entre ambos. Los 4 primeros pasan a semifinales (1° vs 4° y 2° vs 3°).</p><p>Eliminatorias: partido único. Si hay empate, se define por penales.</p>'+(EDIT?'<p>Para borrar un resultado, vaciá los dos casilleros del partido.</p>':'')+'</div>';
+  return '<div class="rules"><p>Un solo grupo, todos contra todos: 3 puntos por victoria, 1 por empate. Desempate por diferencia de gol, goles a favor y resultado entre ambos. '+(S.q===8?'Los 8 primeros pasan a cuartos de final (1° vs 8°, 4° vs 5°, 2° vs 7° y 3° vs 6°), después semifinales y final.':'Los 4 primeros pasan a semifinales (1° vs 4° y 2° vs 3°).')+'</p><p>Eliminatorias: partido único. Si hay empate, se define por penales.</p>'+(EDIT?'<p>Para borrar un resultado, vaciá los dos casilleros del partido.</p>':'')+'</div>';
 }
 
 function gruposView(){
@@ -378,9 +393,9 @@ function koCard(r){
 
 function llavesView(){
   var finals=['final'].concat(S.third?['third']:[]);
-  var cols=[{t:'Semifinales',ids:['sf1','sf2'],c:''},{t:'Final',ids:finals,c:' fin'}];
+  var cols=(S.q===8?[{t:'Cuartos de final',ids:['qf1','qf2','qf3','qf4'],c:''}]:[]).concat([{t:'Semifinales',ids:['sf1','sf2'],c:''},{t:'Final',ids:finals,c:' fin'}]);
   var warn=(!GROUPS.every(function(g){return groupTotals(g).done;}))?'<p class="hint" style="margin:0 0 16px">Los cruces se completan cuando termina la fase de grupos. Cada lugar muestra su posición hasta que se define.</p>':'';
-  return champHtml()+warn+'<div class="ko">'+cols.map(function(c){
+  return champHtml()+warn+'<div class="ko'+(cols.length>2?' c3':'')+'">'+cols.map(function(c){
     return '<div class="kocol'+c.c+'"><h3>'+c.t+'</h3>'+c.ids.map(function(id){return koCard(K[id]);}).join('')+'</div>';
   }).join('')+'</div>'+rulesHtml();
 }
@@ -388,7 +403,7 @@ function llavesView(){
 function locked(){return Object.keys(S.results).length>0;}
 function jugadoresView(){
   var counts={}; S.players.forEach(function(p){var t=(p.team||'').trim().toLowerCase(); if(t) counts[t]=(counts[t]||0)+1;});
-  var n=S.players.length;
+  var n=S.players.length, koStarted=Object.keys(S.ko).length>0;
   var rows=S.players.map(function(p,i){
     var dup=p.team&&counts[p.team.trim().toLowerCase()]>1;
     if(!EDIT) return '<div class="prow"><span class="n">'+(i+1)+'</span><div class="tx"><span class="nm">'+esc(p.name)+'</span></div><div class="tx">'+(p.team?esc(p.team):'<span class="ph">Equipo sin elegir</span>')+(dup?'<span class="dup">Repetido</span>':'')+'</div><div></div></div>';
@@ -400,10 +415,13 @@ function jugadoresView(){
   var dl='<datalist id="teams">'+TEAMS.map(function(t){return '<option value="'+esc(t)+'">';}).join('')+'</datalist>';
   var acts='';
   if(EDIT){
-    acts='<div class="acts"><label class="chk"><input type="checkbox" id="third" data-act="third"'+(S.third?' checked':'')+'> Partido por el tercer puesto</label></div>'
-      +'<p class="hint">Si se baja alguien, tocá Quitar y después Confirmar: se borran sus resultados y el fixture se arma de nuevo con los que quedan. Los nombres y los equipos se pueden cambiar siempre.</p>'
-      +(n!==8?'<p class="warn">Deberían ser 8 jugadores (ahora hay '+n+').'+(n>8?' Quitá a los que se bajaron.':'')+'</p>':'')
-      +'<div class="acts">'+(confirmReset?'<button class="btn dng" data-act="reset-yes">Sí, borrar todos los resultados</button><button class="btn" data-act="reset-no">Cancelar</button>':'<button class="btn dng" data-act="reset"'+(locked()||Object.keys(S.ko).length?'':' disabled')+'>Reiniciar resultados</button>')+'</div>';
+    acts='<div class="acts"><button class="btn pri" data-act="add"'+(n>=16?' disabled':'')+'>Agregar jugador ('+n+'/16)</button></div>'
+      +'<div class="acts"><label for="qsel">Clasifican a la fase final</label><select id="qsel" data-act="q" style="max-width:360px"'+(koStarted?' disabled':'')+'><option value="4"'+(S.q===4?' selected':'')+'>Los 4 primeros (semifinales y final)</option><option value="8"'+(S.q===8?' selected':'')+'>Los 8 primeros (cuartos, semifinales y final)</option></select></div>'
+      +(koStarted?'<p class="hint">Ya hay resultados de eliminatorias. Para cambiar cuántos clasifican, primero reiniciá los resultados.</p>':'')
+      +'<div class="acts"><label class="chk"><input type="checkbox" id="third" data-act="third"'+(S.third?' checked':'')+'> Partido por el tercer puesto</label></div>'
+      +'<p class="hint">Podés tener hasta 16 jugadores. Al agregar o quitar a alguien, los partidos ya jugados se conservan y el fixture se reacomoda. Quitar a un jugador (Quitar y después Confirmar) borra sus resultados.</p>'
+      +(n<S.q?'<p class="warn">Con '+n+' jugadores no alcanza para clasificar '+S.q+'. Agregá jugadores o elegí que clasifiquen 4.</p>':'')
+      +'<div class="acts">'+(confirmReset?'<button class="btn dng" data-act="reset-yes">Sí, borrar todos los resultados</button><button class="btn" data-act="reset-no">Cancelar</button>':'<button class="btn dng" data-act="reset"'+(locked()||koStarted?'':' disabled')+'>Reiniciar resultados</button>')+'</div>';
   }
   return '<h2>Jugadores</h2><div class="panel"><div class="prow head"><span></span><span>Nombre</span><span>Equipo</span><span></span></div>'+rows+dl+acts+'</div>';
 }
@@ -413,12 +431,12 @@ function render(){
   var ae=document.activeElement, fid=(ae&&ae.id&&app.contains(ae))?ae.id:null;
   var gp=groupTotals('A');
   var played=gp.played, tot=gp.tot;
-  var kd=KO.filter(function(m){return (m.id!=='third'||S.third)&&K[m.id].winner;}).length, kt=S.third?4:3;
+  var kd=KO.filter(function(m){return (m.id!=='third'||S.third)&&K[m.id].winner;}).length, kt=KO.filter(function(m){return m.id!=='third'||S.third;}).length;
   var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():gruposView();
   var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores']].map(function(t){
     return '<button data-tab="'+t[0]+'"'+(tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>';
   }).join('');
-  app.innerHTML='<header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores · todos contra todos · clasifican 4 · partido único</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span><span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
+  app.innerHTML='<header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores · todos contra todos · clasifican '+S.q+' · partido único</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span><span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
     +'<nav class="tabs"><div class="wrap">'+tabs+'</div></nav><main class="wrap">'+view+'</main>';
   if(fid){var el=document.getElementById(fid); if(el){try{el.focus({preventScroll:true});}catch(e){}}}
 }
@@ -437,7 +455,7 @@ function api(path,opt){
 }
 function migrate(d){
   d.results=d.results||{}; d.ko=d.ko||{}; d.third=d.third!==false;
-  if(!d.v||d.v<2){d.ko={}; d.v=2;}
+  if(!d.v||d.v<2){d.ko={};} d.v=3; d.q=(d.q===8?8:4);
   (d.players||[]).forEach(function(p){p.group='A';});
   return d;
 }
@@ -478,6 +496,14 @@ function saveNow(){
     if(again){again=false; schedulePublish();}
   })
   .catch(function(){saving=false; dirty=true; setStatus('Sin conexión'); toast('No se pudo guardar: sin conexión.');});
+}
+function addPlayer(){
+  if(S.players.length>=16){toast('Máximo 16 jugadores'); return;}
+  var max=0; S.players.forEach(function(p){var m=/^p(\d+)$/.exec(p.id); if(m) max=Math.max(max,+m[1]);});
+  var id='p'+(max+1);
+  S.players.push({id:id,name:'Jugador '+(max+1),team:'',group:'A'});
+  commit(); toast('Jugador agregado');
+  setTimeout(function(){var el=document.getElementById('pn-'+id); if(el){el.focus(); if(el.select) el.select();}},60);
 }
 function removePlayer(id){
   removeId=null;
@@ -523,6 +549,7 @@ app.addEventListener('click',function(e){
   if(!act||!EDIT) return;
   if(act==='remove'){removeId=t.dataset.pid; render();}
   else if(act==='remove-yes'){removePlayer(t.dataset.pid);}
+  else if(act==='add'){addPlayer();}
   else if(act==='reset'){confirmReset=true; render();}
   else if(act==='reset-no'){confirmReset=false; render();}
   else if(act==='reset-yes'){confirmReset=false; S.results={}; S.ko={}; commit(); toast('Resultados borrados');}
@@ -533,6 +560,7 @@ app.addEventListener('keydown',function(e){
 });
 app.addEventListener('change',function(e){
   var t=e.target; if(!EDIT) return;
+  if(t.dataset.act==='q'){S.q=t.value==='8'?8:4; commit(); return;}
   if(t.dataset.act==='third'){S.third=t.checked; commit(); return;}
   if(t.dataset.pf){
     var p=P(t.dataset.pid), f=t.dataset.pf, v=t.value.trim();
