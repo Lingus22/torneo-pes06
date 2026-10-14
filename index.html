@@ -297,11 +297,20 @@ function searchWd(q,lang){
     });
   });
 }
+function apiFootballLogo(name){
+  return fetch('/api/team-logo?search='+encodeURIComponent(name))
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(data){return data&&typeof data.logo==='string'?data.logo:'';})
+    .catch(function(){return '';});
+}
 function lookupLogo(name){
   var key=norm(name); if(!key) return Promise.resolve('');
   if(NATIONS[key]) return Promise.resolve('https://flagcdn.com/w80/'+NATIONS[key]+'.png');
   var q=ALIAS[key]||name;
-  return searchWd(q,'en').then(function(u){return u||(ALIAS[key]?'':searchWd(q,'es'));}).catch(function(){return '';});
+  return apiFootballLogo(q).then(function(u){
+    if(u) return u;
+    return searchWd(q,'en').then(function(w){return w||(ALIAS[key]?'':searchWd(q,'es'));});
+  }).catch(function(){return '';});
 }
 function findLogo(id,team,quiet){
   return lookupLogo(team).then(function(u){return u?probe(u).then(function(ok){return ok?u:'';}):'';}).then(function(u){
