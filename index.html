@@ -320,12 +320,15 @@ function findLogo(id,team,quiet){
     return false;
   });
 }
+function needsLogoLookup(p){
+  return !!p.team && (!p.logo || /^https:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\//.test(p.logo));
+}
 function findMissingLogos(){
-  var todo=S.players.filter(function(p){return p.team&&!p.logo;});
-  if(!todo.length){toast('Todos los equipos ya tienen escudo'); return;}
-  toast('Buscando escudos…'); var found=0;
+  var todo=S.players.filter(needsLogoLookup);
+  if(!todo.length){toast('No hay escudos pendientes de buscar o actualizar'); return;}
+  toast('Buscando y actualizando escudos…'); var found=0;
   todo.reduce(function(chain,p){return chain.then(function(){return findLogo(p.id,p.team,true).then(function(ok){if(ok) found++;});});},Promise.resolve())
-    .then(function(){toast('Escudos encontrados: '+found+' de '+todo.length);});
+    .then(function(){toast('Escudos encontrados o actualizados: '+found+' de '+todo.length);});
 }
 function scaleLogo(img,size,type){
   var c=document.createElement('canvas'); c.width=size; c.height=size;
@@ -570,7 +573,7 @@ function locked(){return Object.keys(S.results).length>0;}
 function jugadoresView(){
   var counts={}; S.players.forEach(function(p){var t=(p.team||'').trim().toLowerCase(); if(t) counts[t]=(counts[t]||0)+1;});
   var n=S.players.length, koStarted=Object.keys(S.ko).length>0;
-  var missing=S.players.filter(function(p){return p.team&&!p.logo;}).length;
+  var missing=S.players.filter(needsLogoLookup).length;
   var rows=S.players.map(function(p,i){
     var dup=p.team&&counts[p.team.trim().toLowerCase()]>1;
     if(!EDIT) return '<div class="prow"><span class="n">'+(i+1)+'</span><div class="tx"><span class="nm">'+esc(p.name)+'</span></div><div class="tx"><span class="tcell">'+crest(p,28)+'<span>'+(p.team?esc(p.team):'<span class="ph">Equipo sin elegir</span>')+(dup?'<span class="dup">Repetido</span>':'')+'</span></span></div><div></div></div>';
@@ -582,7 +585,7 @@ function jugadoresView(){
   var dl='<datalist id="teams">'+TEAMS.map(function(t){return '<option value="'+esc(t)+'">';}).join('')+'</datalist>';
   var acts='';
   if(EDIT){
-    acts='<div class="acts"><button class="btn pri" data-act="add"'+(n>=16?' disabled':'')+'>Agregar jugador ('+n+'/16)</button><button class="btn" data-act="findlogos"'+(missing?'':' disabled')+'>Buscar escudos que faltan'+(missing?' ('+missing+')':'')+'</button></div>'
+    acts='<div class="acts"><button class="btn pri" data-act="add"'+(n>=16?' disabled':'')+'>Agregar jugador ('+n+'/16)</button><button class="btn" data-act="findlogos"'+(missing?'':' disabled')+'>Buscar o actualizar escudos'+(missing?' ('+missing+')':'')+'</button></div>'
       +'<p class="hint">Al elegir un equipo se busca el escudo solo (las selecciones muestran su bandera). Si no aparece o es otro, tocá el recuadro del escudo y subí una imagen.</p>'
       +'<div class="acts"><label for="qsel">Clasifican a la fase final</label><select id="qsel" data-act="q" style="max-width:360px"'+(koStarted?' disabled':'')+'><option value="4"'+(S.q===4?' selected':'')+'>Los 4 primeros (semifinales y final)</option><option value="8"'+(S.q===8?' selected':'')+'>Los 8 primeros (cuartos, semifinales y final)</option></select></div>'
       +(koStarted?'<p class="hint">Ya hay resultados de eliminatorias. Para cambiar cuántos clasifican, primero reiniciá los resultados.</p>':'')
