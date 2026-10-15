@@ -63,7 +63,7 @@ nav.tabs button{font:700 italic 1.25rem/1 var(--font-display);text-transform:upp
 nav.tabs button:hover{color:#fff;background:rgba(255,255,255,.12)}
 nav.tabs button[aria-current="page"]{color:var(--accent-ink);background:linear-gradient(180deg,#FFD25A 0,#FFC02E 49%,#F2A400 51%,#FFB81C 100%)}
 nav.tabs button:focus-visible{background:var(--glow);color:#021033;outline:0}
-@media (max-width:480px){nav.tabs .wrap{gap:4px}nav.tabs button{padding:0 16px;font-size:1.1rem}}
+@media (max-width:480px){nav.tabs .wrap{display:flex;flex-wrap:wrap;justify-content:center;overflow:visible;gap:4px;padding-block:6px}nav.tabs button{flex:0 1 calc((100% - 8px)/3);min-width:0;padding:0 8px;font-size:1rem}}
 
 main{padding-block:24px 64px}
 h2{font:700 italic 1.9rem/1 var(--font-display);text-transform:uppercase;letter-spacing:.02em;margin-bottom:14px;color:#fff}
