@@ -527,9 +527,9 @@ function rulesHtml(){
   return '<div class="rules"><p>Un solo grupo, todos contra todos: 3 puntos por victoria, 1 por empate. Desempate por diferencia de gol, goles a favor y resultado entre ambos. '+(S.q===8?'Los 8 primeros pasan a cuartos de final (1° vs 8°, 4° vs 5°, 2° vs 7° y 3° vs 6°), después semifinales y final.':'Los 4 primeros pasan a semifinales (1° vs 4° y 2° vs 3°).')+'</p><p>Eliminatorias: partido único. Si hay empate, se define por penales.</p>'+(EDIT?'<p>Para borrar un resultado, vaciá los dos casilleros del partido.</p>':'')+'</div>';
 }
 
-function gruposView(){
+function groupSection(g,which){var h=groupHtml(g),a=h.indexOf('<div class="ltab">'),b=h.indexOf('<div class="fixture">'),z=h.lastIndexOf('</section>');return '<section class="liga" style="grid-template-columns:minmax(0,1fr)">'+(which==='positions'?h.slice(a,b):h.slice(b,z))+'</section>';}function partidosView(){return champHtml()+facts()+nextHtml()+'<div class="groups">'+GROUPS.map(function(g){return groupSection(g,'fixture');}).join('')+'</div>'+rulesHtml();}function posicionesView(){return '<div class="groups">'+GROUPS.map(function(g){return groupSection(g,'positions');}).join('')+'</div>';}function gruposView(){
   var hasAny=GROUPS.some(function(g){return groupTotals(g).tot>0;});
-  return champHtml()+facts()+nextHtml()+'<div class="groups">'+GROUPS.map(groupHtml).join('')+'</div>'+rulesHtml();
+  return partidosView();
 }
 
 function koCard(r){
@@ -608,8 +608,8 @@ function render(){
   var gp=groupTotals('A');
   var played=gp.played, tot=gp.tot;
   var kd=KO.filter(function(m){return (m.id!=='third'||S.third)&&K[m.id].winner;}).length, kt=KO.filter(function(m){return m.id!=='third'||S.third;}).length;
-  var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():tab==='cache'&&EDIT?cacheView():tab==='campeones'?campeonesView():gruposView();
-  var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores'],['cache','Caché'],['campeones','Campeones']].filter(function(t){return EDIT||t[0]!=='cache';}).map(function(t){
+  var view=tab==='tabla'?posicionesView():tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():tab==='cache'&&EDIT?cacheView():tab==='campeones'?campeonesView():partidosView();
+  var tabs=[['grupos','Partidos'],['tabla','Posiciones'],['llaves','Llaves'],['jugadores','Jugadores'],['cache','Caché'],['campeones','Campeones']].filter(function(t){return EDIT||t[0]!=='cache';}).map(function(t){
     return '<button data-tab="'+t[0]+'"'+(tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>';
   }).join('');
   app.innerHTML='<style>'+crestCss()+'</style><header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores, todos contra todos. Clasifican '+S.q+'. Partido único.</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span>'+(EDIT?'<span class="chip">'+(S.apiQuota?'API '+S.apiQuota.remaining+'/'+S.apiQuota.limit+' disp.':'API sin dato')+'</span>':'')+'<span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
