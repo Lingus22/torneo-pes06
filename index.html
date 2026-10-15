@@ -627,7 +627,7 @@ function api(path,opt){
 function migrate(d){
   d.results=d.results||{}; d.ko=d.ko||{}; d.logoCache=d.logoCache||{}; d.logoCacheDisabled=d.logoCacheDisabled||{}; d.third=d.third!==false;
   if(!d.v||d.v<2){d.ko={};} d.v=3; d.q=(d.q===8?8:4);
-  (d.players||[]).forEach(function(p){p.group='A';});
+  (d.players||[]).forEach(function(p){p.group='A'; var key=norm(p.team); if(key&&validLogo(p.logo)&&!d.logoCacheDisabled[key]&&!d.logoCache[key]) d.logoCache[key]=p.logo;});
   return d;
 }
 function normalize(d){return migrate(d);}
