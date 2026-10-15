@@ -287,6 +287,8 @@ function lookupLogo(name){
   var key=canonicalKey(name),cache=logoCache(),disabled=logoCacheDisabled();
   if(!disabled[key]&&isApiFootballLogo(cache[key])) return Promise.resolve(cache[key]);
   var q=ALIAS[raw]||name;
+  var broadNames={'fc barcelona':'barcelona','real madrid cf':'real madrid','valencia cf':'valencia','ac milan':'milan','ss lazio':'lazio','ssc napoli':'napoli','acf fiorentina':'fiorentina','tottenham hotspur':'tottenham','newcastle united':'newcastle','psv eindhoven':'psv','s l benfica':'benfica','sporting cp':'sporting','olympique lyonnais':'lyon','olympique de marseille':'marseille','as monaco':'monaco','club atletico river plate':'river plate','san lorenzo de almagro':'san lorenzo','estudiantes de la plata':'estudiantes','velez sarsfield':'velez','newells old boys':'newells'};
+  var broad=norm(q); q=broadNames[broad]||broad.replace(/^(?:fc|afc|acf|ssc|sv|club atletico|club)\s+/,'').replace(/\s+(?:cf|fc|afc|football club)$/,'')||broad;
   return apiFootballLogo(q).then(function(u){return isApiFootballLogo(u)?u:'';}).catch(function(){return '';});
 }
 function findLogo(id,team,quiet){
