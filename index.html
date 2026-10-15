@@ -195,7 +195,7 @@ select option{background:#0A1848;color:var(--ink)}
 .tcell{display:flex;align-items:center;gap:8px;min-width:0}
 .tcell input{flex:1;min-width:0}
 .crestbtn{position:relative;flex:none;padding:0;border:0;background:none;cursor:pointer;border-radius:4px;line-height:0}
-.crestbtn:hover .crest{filter:brightness(.88)}.cachebtn{min-height:30px;padding:0 8px;margin-top:5px;font-size:.88rem}
+.crestbtn:hover .crest{filter:brightness(.88)}.cache-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.cache-logo{display:block;width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}.champion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}.champion-card{padding:18px;background:linear-gradient(135deg,rgba(255,184,28,.18),rgba(255,255,255,.04)),var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}.champion-edition{font:700 italic 1.1rem var(--font-display);text-transform:uppercase;color:var(--accent)}.champion-name{font:800 italic 1.8rem/1 var(--font-display);text-transform:uppercase;margin-top:6px}.champion-team{color:var(--glow);font-weight:700;margin-top:4px}.champion-card.current{margin:12px 0 20px;border-left-color:var(--glow)}.champ-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.cachebtn{min-height:30px;padding:0 8px;margin-top:5px;font-size:.88rem}
 .crestbtn::after{content:"+";position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:700 13px/16px var(--font-display);text-align:center}
 .il{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;flex:0 1 auto}
 .il b{white-space:nowrap}
@@ -228,10 +228,12 @@ var TEAMS=['Argentina','Brasil','Uruguay','Chile','Colombia','Paraguay','Perú',
 
 /* ===== Escudos: selecciones con bandera, clubes buscados en Wikidata, o imagen subida ===== */
 var NATIONS={'argentina':'ar','brasil':'br','brazil':'br','uruguay':'uy','chile':'cl','colombia':'co','paraguay':'py','peru':'pe','ecuador':'ec','bolivia':'bo','venezuela':'ve','mexico':'mx','estados unidos':'us','usa':'us','espana':'es','spain':'es','italia':'it','italy':'it','francia':'fr','france':'fr','alemania':'de','germany':'de','inglaterra':'gb-eng','england':'gb-eng','escocia':'gb-sct','gales':'gb-wls','irlanda':'ie','holanda':'nl','paises bajos':'nl','netherlands':'nl','portugal':'pt','belgica':'be','belgium':'be','croacia':'hr','croatia':'hr','suecia':'se','sweden':'se','dinamarca':'dk','denmark':'dk','noruega':'no','republica checa':'cz','polonia':'pl','poland':'pl','rusia':'ru','russia':'ru','turquia':'tr','grecia':'gr','suiza':'ch','austria':'at','serbia':'rs','ucrania':'ua','rumania':'ro','hungria':'hu','costa de marfil':'ci','camerun':'cm','nigeria':'ng','ghana':'gh','senegal':'sn','marruecos':'ma','tunez':'tn','egipto':'eg','sudafrica':'za','angola':'ao','togo':'tg','japon':'jp','japan':'jp','corea del sur':'kr','china':'cn','australia':'au','arabia saudita':'sa','iran':'ir','canada':'ca','costa rica':'cr','honduras':'hn','jamaica':'jm'};
-var ALIAS={'barcelona':'FC Barcelona','real madrid':'Real Madrid CF','valencia':'Valencia CF','atletico de madrid':'Atlético Madrid','sevilla':'Sevilla FC','villarreal':'Villarreal CF','milan':'AC Milan','inter':'Inter Milan','roma':'AS Roma','lazio':'SS Lazio','napoli':'SSC Napoli','fiorentina':'ACF Fiorentina','tottenham':'Tottenham Hotspur','newcastle':'Newcastle United','bayern munich':'Bayern Munich','schalke 04':'FC Schalke 04','werder bremen':'SV Werder Bremen','ajax':'AFC Ajax','psv':'PSV Eindhoven','benfica':'S.L. Benfica','porto':'FC Porto','sporting':'Sporting CP','psg':'Paris Saint-Germain','lyon':'Olympique Lyonnais','marsella':'Olympique de Marseille','monaco':'AS Monaco','river plate':'Club Atlético River Plate','racing':'Racing Club','san lorenzo':'San Lorenzo de Almagro','estudiantes':'Estudiantes de La Plata','velez':'Vélez Sarsfield','newells':'Newell\'s Old Boys','independiente':'Club Atlético Independiente'};
+var ALIAS={'barca':'FC Barcelona','barcelona':'FC Barcelona','fc barcelona':'FC Barcelona','inter de milan':'Inter Milan','internazionale':'Inter Milan','ac milan':'AC Milan','milan ac':'AC Milan','atletico madrid':'Atlético Madrid','atletico de madrid':'Atlético Madrid','as roma':'AS Roma','fc porto':'FC Porto','paris saint germain':'Paris Saint-Germain','real madrid':'Real Madrid CF','valencia':'Valencia CF','sevilla':'Sevilla FC','villarreal':'Villarreal CF','milan':'AC Milan','inter':'Inter Milan','roma':'AS Roma','lazio':'SS Lazio','napoli':'SSC Napoli','fiorentina':'ACF Fiorentina','tottenham':'Tottenham Hotspur','newcastle':'Newcastle United','bayern munich':'Bayern Munich','schalke 04':'FC Schalke 04','werder bremen':'SV Werder Bremen','ajax':'AFC Ajax','psv':'PSV Eindhoven','benfica':'S.L. Benfica','porto':'FC Porto','sporting':'Sporting CP','psg':'Paris Saint-Germain','lyon':'Olympique Lyonnais','marsella':'Olympique de Marseille','monaco':'AS Monaco','river plate':'Club Atlético River Plate','racing':'Racing Club','san lorenzo':'San Lorenzo de Almagro','estudiantes':'Estudiantes de La Plata','velez':'Vélez Sarsfield','newells':'Newell\'s Old Boys','independiente':'Club Atlético Independiente'};
+
 var CLUB_TYPES=['Q476028','Q847017'];
 var LOADED={},FAILED={},PENDING={},uploadFor=null;
 function norm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
+function canonicalKey(t){var k=norm(t);return norm(ALIAS[k]||t);}
 function initials(t){t=String(t||'').trim(); if(!t) return ''; var w=t.split(/\s+/).filter(Boolean); return (w.length>1?w[0].charAt(0)+w[1].charAt(0):t.slice(0,2)).toUpperCase();}
 function validLogo(u){return typeof u==='string'&&u.length>0&&u.length<80000&&/^(https:\/\/|data:image\/(png|jpeg|webp|gif);base64,)/.test(u)&&!/["\\\n\r]/.test(u);}
 function crest(p,size){
@@ -299,23 +301,24 @@ function searchWd(q,lang){
 }
 function apiFootballLogo(name){
   return fetch('/api/team-logo?search='+encodeURIComponent(name))
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(data){return data&&typeof data.logo==='string'?data.logo:'';})
+    .then(function(r){var fromCache=r.headers.get('x-vercel-cache')==='HIT';return r.json().then(function(data){if(!fromCache&&data&&data.quota&&isFinite(data.quota.remaining)&&isFinite(data.quota.limit)){var next={remaining:Number(data.quota.remaining),limit:Number(data.quota.limit),updatedAt:new Date().toISOString()};if(!S.apiQuota||S.apiQuota.remaining!==next.remaining||S.apiQuota.limit!==next.limit){S.apiQuota=next;schedulePublish();}}return r.ok&&data&&typeof data.logo==='string'?data.logo:'';});})
     .catch(function(){return '';});
 }
 function logoCache(){if(!S.logoCache||typeof S.logoCache!=='object')S.logoCache={};return S.logoCache;}function logoCacheDisabled(){if(!S.logoCacheDisabled||typeof S.logoCacheDisabled!=='object')S.logoCacheDisabled={};return S.logoCacheDisabled;}function lookupLogo(name){
-  var key=norm(name); if(!key) return Promise.resolve('');
-  if(NATIONS[key]) return Promise.resolve('https://flagcdn.com/w80/'+NATIONS[key]+'.png'); var cache=logoCache(), disabled=logoCacheDisabled(); if(!disabled[key]&&validLogo(cache[key])) return Promise.resolve(cache[key]);
-  var q=ALIAS[key]||name;
-  return apiFootballLogo(name).then(function(u){
+  var raw=norm(name); if(!raw) return Promise.resolve('');
+  if(NATIONS[raw]) return Promise.resolve('https://flagcdn.com/w80/'+NATIONS[raw]+'.png');
+  var key=canonicalKey(name),cache=logoCache(),disabled=logoCacheDisabled();
+  if(!disabled[key]&&validLogo(cache[key])) return Promise.resolve(cache[key]);
+  var q=ALIAS[raw]||name;
+  return apiFootballLogo(q).then(function(u){
     if(u) return u;
-    return searchWd(q,'en').then(function(w){return w||(ALIAS[key]?'':searchWd(q,'es'));});
+    return searchWd(q,'en').then(function(w){return w||(ALIAS[raw]?'':searchWd(q,'es'));});
   }).catch(function(){return '';});
 }
 function findLogo(id,team,quiet){
   return lookupLogo(team).then(function(u){return u?probe(u).then(function(ok){return ok?u:'';}):'';}).then(function(u){
     var p=P(id); if(p.team!==team) return false;
-    if(u){p.logo=u;var key=norm(team);if(key&&!logoCacheDisabled()[key])logoCache()[key]=u;commit();if(!quiet)toast('Escudo de '+team+' encontrado');return true;}
+    if(u){p.logo=u;var key=canonicalKey(team);if(key&&!logoCacheDisabled()[key])logoCache()[key]=u;commit();if(!quiet)toast('Escudo de '+team+' encontrado');return true;}
     if(!quiet) toast('No encontré el escudo de '+team+'. Tocá el recuadro para subir una imagen.');
     return false;
   });
@@ -378,7 +381,7 @@ var EDIT=false, tab='grupos', confirmReset=false, removeId=null;
 var ver=0, dirty=false, saving=false, again=false, showLogin=false, loginErr='', clave='', pubTimer=null;
 var CFG_OK=/^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(window.SUPABASE_URL||'')&&!!window.SUPABASE_KEY&&!/TU_/.test(window.SUPABASE_KEY);
 try{ tab=(location.hash||'').slice(1)||sessionStorage.getItem('pes06-tab')||'grupos'; }catch(e){}
-if(['grupos','llaves','jugadores'].indexOf(tab)<0) tab='grupos';
+if(['grupos','llaves','jugadores','cache','campeones'].indexOf(tab)<0) tab='grupos';
 
 function loadState(){
   try{ var s=JSON.parse(document.getElementById('app-state').textContent); if(s&&s.players&&s.players.length) return migrate(s); }catch(e){}
@@ -577,7 +580,7 @@ function jugadoresView(){
   var rows=S.players.map(function(p,i){
     var dup=p.team&&counts[p.team.trim().toLowerCase()]>1;
     if(!EDIT) return '<div class="prow"><span class="n">'+(i+1)+'</span><div class="tx"><span class="nm">'+esc(p.name)+'</span></div><div class="tx"><span class="tcell">'+crest(p,34)+'<span>'+(p.team?esc(p.team):'<span class="ph">Equipo sin elegir</span>')+(dup?'<span class="dup">Repetido</span>':'')+'</span></span></div><div></div></div>';
-    var cacheKey=norm(p.team), cached=!!logoCache()[cacheKey], disabled=!!logoCacheDisabled()[cacheKey]; var cacheBtn=p.team?'<button class="btn cachebtn" data-act="toggle-logo-cache" data-pid="'+p.id+'">'+(disabled?'Guardar escudo en caché':(cached?'Quitar de caché':'No guardar en caché'))+'</button>':''; var act=removeId===p.id
+    var cacheKey=canonicalKey(p.team), cached=!!logoCache()[cacheKey], disabled=!!logoCacheDisabled()[cacheKey]; var cacheBtn=p.team?'<button class="btn cachebtn" data-act="toggle-logo-cache" data-pid="'+p.id+'">'+(disabled?'Guardar escudo en caché':(cached?'Quitar de caché':'No guardar en caché'))+'</button>':''; var act=removeId===p.id
       ?'<button class="btn dng" data-act="remove-yes" data-pid="'+p.id+'">Confirmar</button>'
       :'<button class="btn" data-act="remove" data-pid="'+p.id+'" aria-label="Quitar a '+esc(p.name)+'">Quitar</button>';
     return '<div class="prow"><span class="n">'+(i+1)+'</span><div><input type="text" id="pn-'+p.id+'" data-pid="'+p.id+'" data-pf="name" value="'+esc(p.name)+'" aria-label="Nombre del jugador '+(i+1)+'" maxlength="30" autocomplete="off"></div><div><div class="tcell"><button class="crestbtn" data-act="logo" data-pid="'+p.id+'" title="Subir un escudo desde una imagen" aria-label="Subir escudo de '+esc(p.name)+'">'+crest(p,34)+'</button><input type="text" id="pt-'+p.id+'" data-pid="'+p.id+'" data-pf="team" list="teams" value="'+esc(p.team)+'" placeholder="Equipo" aria-label="Equipo de '+esc(p.name)+'" maxlength="30" autocomplete="off"></div>'+cacheBtn+(dup?'<span class="dup">Equipo repetido</span>':'')+'</div><div>'+act+'</div></div>';
@@ -597,17 +600,29 @@ function jugadoresView(){
   return '<h2>Jugadores</h2><div class="panel"><div class="prow head"><span></span><span>Nombre</span><span>Equipo</span><span></span></div>'+rows+dl+acts+'</div>';
 }
 
+function cacheView(){
+  var cache=logoCache(),disabled=logoCacheDisabled(),keys=Object.keys(cache).filter(function(k){return validLogo(cache[k]);}).sort(),q=S.apiQuota;
+  var quota=q?'<div class="panel"><h2>Uso de API-Football</h2><p class="hint">Quedan <b>'+q.remaining+' de '+q.limit+'</b> consultas según la última respuesta de la API. Última actualización: '+esc(q.updatedAt?new Date(q.updatedAt).toLocaleString():'')+'.</p></div>':'<div class="panel"><h2>Uso de API-Football</h2><p class="hint">Aún no hay datos. Se actualizará al buscar un escudo que no esté en la caché.</p></div>';
+  var rows=keys.map(function(k){var p=S.players.find(function(x){return canonicalKey(x.team)===k;});return '<div class="cache-row"><img class="cache-logo" src="'+esc(cache[k])+'" alt="Escudo de '+esc(p?p.team:k)+'"><div><b>'+esc(p?p.team:k)+'</b><div class="hint">Listo para reutilizar sin otra búsqueda</div></div>'+(EDIT?'<button class="btn dng" data-act="cache-remove" data-key="'+esc(k)+'">Quitar</button>':'')+'</div>';}).join('');
+  var excluded=Object.keys(disabled).filter(function(k){return disabled[k];}).sort();
+  return '<h2>Caché de escudos</h2>'+quota+'<div class="panel"><p class="hint">La caché se comparte y se guarda junto con los datos del torneo en Supabase.</p><p class="facts"><b>'+keys.length+'</b> escudos guardados</p>'+(keys.length?rows:'<p class="hint">Todavía no hay escudos guardados.</p>')+'</div>'+(excluded.length?'<div class="panel"><h2>Excluidos</h2><p class="hint">Estos equipos no se guardan automáticamente.</p>'+excluded.map(function(k){return '<div class="cache-row"><b>'+esc(k)+'</b></div>';}).join('')+'</div>':'');
+}
+function campeonesView(){
+  var champs=Array.isArray(S.champions)?S.champions:[],current=K.final&&K.final.winner?P(K.final.winner):null;
+  var rows=champs.slice().reverse().map(function(c){return '<article class="champion-card"><div class="champion-edition">'+esc(c.edition||'Edición')+'</div><div class="champion-name">'+esc(c.name||'')+'</div><div class="champion-team">'+esc(c.team||'')+'</div><div class="hint">'+esc(c.result||'')+'</div></article>';}).join('');
+  return '<h2>Palmarés</h2>'+(current?'<article class="champion-card current"><div class="champion-edition">Campeón de esta edición</div><div class="champion-name">'+esc(current.name)+'</div><div class="champion-team">'+esc(current.team||'')+'</div></article>':'<p class="hint">El campeón de esta edición aparecerá al completarse la final.</p>')+'<div class="champion-list">'+(rows||'<p class="hint">Todavía no hay campeones registrados.</p>')+'</div>'+(EDIT?'<div class="panel"><h2>Agregar campeón</h2><div class="champ-form"><input id="champ-edition" type="text" placeholder="Edición o año" maxlength="40"><input id="champ-name" type="text" placeholder="Nombre del campeón" maxlength="60"><input id="champ-team" type="text" placeholder="Equipo" maxlength="60"><input id="champ-result" type="text" placeholder="Resultado de la final (opcional)" maxlength="80"><button class="btn pri" data-act="champ-add">Guardar campeón</button></div></div>':'');
+}
 function render(){
   K=computeKO(); preloadLogos();
   var ae=document.activeElement, fid=(ae&&ae.id&&app.contains(ae))?ae.id:null;
   var gp=groupTotals('A');
   var played=gp.played, tot=gp.tot;
   var kd=KO.filter(function(m){return (m.id!=='third'||S.third)&&K[m.id].winner;}).length, kt=KO.filter(function(m){return m.id!=='third'||S.third;}).length;
-  var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():gruposView();
-  var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores']].map(function(t){
+  var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():tab==='cache'?cacheView():tab==='campeones'?campeonesView():gruposView();
+  var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores'],['cache','Caché'],['campeones','Campeones']].map(function(t){
     return '<button data-tab="'+t[0]+'"'+(tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>';
   }).join('');
-  app.innerHTML='<style>'+crestCss()+'</style><header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores, todos contra todos. Clasifican '+S.q+'. Partido único.</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span><span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
+  app.innerHTML='<style>'+crestCss()+'</style><header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores, todos contra todos. Clasifican '+S.q+'. Partido único.</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span><span class="chip">'+(S.apiQuota?'API '+S.apiQuota.remaining+'/'+S.apiQuota.limit+' disp.':'API sin dato')+'</span><span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
     +'<nav class="tabs"><div class="wrap">'+tabs+'</div></nav><main class="wrap">'+view+'</main>';
   if(fid){var el=document.getElementById(fid); if(el){try{el.focus({preventScroll:true});}catch(e){}}}
 }
@@ -625,9 +640,9 @@ function api(path,opt){
   return fetch(base+'/rest/v1/'+path,opt);
 }
 function migrate(d){
-  d.results=d.results||{}; d.ko=d.ko||{}; d.logoCache=d.logoCache||{}; d.logoCacheDisabled=d.logoCacheDisabled||{}; d.third=d.third!==false;
-  if(!d.v||d.v<2){d.ko={};} d.v=3; d.q=(d.q===8?8:4);
-  (d.players||[]).forEach(function(p){p.group='A'; var key=norm(p.team); if(key&&validLogo(p.logo)&&!d.logoCacheDisabled[key]&&!d.logoCache[key]) d.logoCache[key]=p.logo;});
+  d.results=d.results||{}; d.ko=d.ko||{}; d.logoCache=d.logoCache||{}; d.logoCacheDisabled=d.logoCacheDisabled||{}; d.champions=Array.isArray(d.champions)?d.champions:[]; if(!d.champions.length)d.champions.push({edition:'1.ª edición',name:'Valentín Raverot',team:'AS Roma FC',result:'Resultado no registrado'}); d.apiQuota=d.apiQuota||null; d.third=d.third!==false; var normalizedCache={},normalizedDisabled={}; Object.keys(d.logoCache).forEach(function(k){var ck=canonicalKey(k);if(ck&&!normalizedCache[ck])normalizedCache[ck]=d.logoCache[k];}); Object.keys(d.logoCacheDisabled).forEach(function(k){var ck=canonicalKey(k);if(ck&&d.logoCacheDisabled[k])normalizedDisabled[ck]=true;}); d.logoCache=normalizedCache; d.logoCacheDisabled=normalizedDisabled;
+  if(!d.v||d.v<2){d.ko={};} d.v=4; d.q=(d.q===8?8:4);
+  (d.players||[]).forEach(function(p){p.group='A'; var key=canonicalKey(p.team); if(key&&validLogo(p.logo)&&!d.logoCacheDisabled[key]&&!d.logoCache[key]) d.logoCache[key]=p.logo;});
   return d;
 }
 function normalize(d){return migrate(d);}
@@ -719,7 +734,7 @@ app.addEventListener('click',function(e){
   if(act==='logout'){EDIT=false; clave=''; try{localStorage.removeItem('pes06-clave');}catch(x){} render(); return;}
   if(!act||!EDIT) return;
   if(act==='remove'){removeId=t.dataset.pid; render();}
-  else if(act==='toggle-logo-cache'){var cp=P(t.dataset.pid),ck=norm(cp.team);if(!ck)return;var cache=logoCache(),disabled=logoCacheDisabled();if(disabled[ck]){delete disabled[ck];if(validLogo(cp.logo))cache[ck]=cp.logo;toast('El escudo de '+cp.team+' se guardará en la caché');}else{delete cache[ck];disabled[ck]=true;toast('El escudo de '+cp.team+' no se guardará en la caché');}commit();} else if(act==='remove-yes'){removePlayer(t.dataset.pid);}
+  else if(act==='toggle-logo-cache'){var cp=P(t.dataset.pid),ck=canonicalKey(cp.team);if(!ck)return;var cache=logoCache(),disabled=logoCacheDisabled();if(disabled[ck]){delete disabled[ck];if(validLogo(cp.logo))cache[ck]=cp.logo;toast('El escudo de '+cp.team+' se guardará en la caché');}else{delete cache[ck];disabled[ck]=true;toast('El escudo de '+cp.team+' no se guardará en la caché');}commit();} else if(act==='cache-remove'){var ck=t.dataset.key;if(ck){delete logoCache()[ck];logoCacheDisabled()[ck]=true;commit();toast('Escudo quitado de la caché');}} else if(act==='champ-add'){var ce=document.getElementById('champ-edition'),cn=document.getElementById('champ-name'),ct=document.getElementById('champ-team'),cr=document.getElementById('champ-result');if(!ce||!cn||!ct||!ce.value.trim()||!cn.value.trim()||!ct.value.trim()){toast('Completá edición, campeón y equipo');return;}S.champions=S.champions||[];S.champions.push({edition:ce.value.trim(),name:cn.value.trim(),team:ct.value.trim(),result:cr.value.trim()||'Resultado no registrado'});commit();toast('Campeón agregado al palmarés');} else if(act==='remove-yes'){removePlayer(t.dataset.pid);}
   else if(act==='add'){addPlayer();}
   else if(act==='logo'){uploadFor=t.dataset.pid; var fi=document.getElementById('logofile'); fi.value=''; fi.click();}
   else if(act==='findlogos'){findMissingLogos();}
@@ -733,7 +748,7 @@ document.getElementById('logofile').addEventListener('change',function(e){
   var id=uploadFor; uploadFor=null;
   readLogo(f,function(u){
     if(!u){toast('No se pudo usar esa imagen. Probá con un PNG o JPG.'); return;}
-    var p=P(id); p.logo=u; var key=norm(p.team); if(key&&!logoCacheDisabled()[key]) logoCache()[key]=u; LOADED[u]=1; commit(); toast('Escudo cargado');
+    var p=P(id); p.logo=u; var key=canonicalKey(p.team); if(key&&!logoCacheDisabled()[key]) logoCache()[key]=u; LOADED[u]=1; commit(); toast('Escudo cargado');
   });
 });
 app.addEventListener('keydown',function(e){
