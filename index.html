@@ -226,11 +226,10 @@ var GROUPS=['A'];
 var TEAMS=['Argentina','Brasil','Uruguay','Chile','Colombia','Paraguay','Perú','Ecuador','México','Estados Unidos','España','Italia','Francia','Alemania','Inglaterra','Holanda','Portugal','Bélgica','Croacia','Suecia','Dinamarca','República Checa','Polonia','Rusia','Turquía','Grecia','Suiza','Costa de Marfil','Camerún','Nigeria','Ghana','Japón','Corea del Sur',
   'Real Madrid','Barcelona','Valencia','Atlético de Madrid','Sevilla','Villarreal','Milan','Inter','Juventus','Roma','Lazio','Napoli','Fiorentina','Manchester United','Chelsea','Arsenal','Liverpool','Tottenham','Newcastle','Bayern Múnich','Borussia Dortmund','Schalke 04','Werder Bremen','Ajax','PSV','Benfica','Porto','Sporting','Celtic','Rangers','Galatasaray','Fenerbahçe','PSG','Lyon','Marsella','Mónaco','Boca Juniors','River Plate','Independiente','Racing','San Lorenzo','Estudiantes','Vélez','Newell\'s','Rosario Central','Lanús'];
 
-/* ===== Escudos: selecciones con bandera, clubes buscados en Wikidata, o imagen subida ===== */
+/* ===== Escudos: selecciones con bandera, clubes vía API-Football, o imagen subida ===== */
 var NATIONS={'argentina':'ar','brasil':'br','brazil':'br','uruguay':'uy','chile':'cl','colombia':'co','paraguay':'py','peru':'pe','ecuador':'ec','bolivia':'bo','venezuela':'ve','mexico':'mx','estados unidos':'us','usa':'us','espana':'es','spain':'es','italia':'it','italy':'it','francia':'fr','france':'fr','alemania':'de','germany':'de','inglaterra':'gb-eng','england':'gb-eng','escocia':'gb-sct','gales':'gb-wls','irlanda':'ie','holanda':'nl','paises bajos':'nl','netherlands':'nl','portugal':'pt','belgica':'be','belgium':'be','croacia':'hr','croatia':'hr','suecia':'se','sweden':'se','dinamarca':'dk','denmark':'dk','noruega':'no','republica checa':'cz','polonia':'pl','poland':'pl','rusia':'ru','russia':'ru','turquia':'tr','grecia':'gr','suiza':'ch','austria':'at','serbia':'rs','ucrania':'ua','rumania':'ro','hungria':'hu','costa de marfil':'ci','camerun':'cm','nigeria':'ng','ghana':'gh','senegal':'sn','marruecos':'ma','tunez':'tn','egipto':'eg','sudafrica':'za','angola':'ao','togo':'tg','japon':'jp','japan':'jp','corea del sur':'kr','china':'cn','australia':'au','arabia saudita':'sa','iran':'ir','canada':'ca','costa rica':'cr','honduras':'hn','jamaica':'jm'};
 var ALIAS={'barca':'FC Barcelona','barcelona':'FC Barcelona','fc barcelona':'FC Barcelona','inter de milan':'Inter Milan','internazionale':'Inter Milan','ac milan':'AC Milan','milan ac':'AC Milan','atletico madrid':'Atlético Madrid','atletico de madrid':'Atlético Madrid','as roma':'AS Roma','fc porto':'FC Porto','paris saint germain':'Paris Saint-Germain','real madrid':'Real Madrid CF','valencia':'Valencia CF','sevilla':'Sevilla FC','villarreal':'Villarreal CF','milan':'AC Milan','inter':'Inter Milan','roma':'AS Roma','lazio':'SS Lazio','napoli':'SSC Napoli','fiorentina':'ACF Fiorentina','tottenham':'Tottenham Hotspur','newcastle':'Newcastle United','bayern munich':'Bayern Munich','schalke 04':'FC Schalke 04','werder bremen':'SV Werder Bremen','ajax':'AFC Ajax','psv':'PSV Eindhoven','benfica':'S.L. Benfica','porto':'FC Porto','sporting':'Sporting CP','psg':'Paris Saint-Germain','lyon':'Olympique Lyonnais','marsella':'Olympique de Marseille','monaco':'AS Monaco','river plate':'Club Atlético River Plate','racing':'Racing Club','san lorenzo':'San Lorenzo de Almagro','estudiantes':'Estudiantes de La Plata','velez':'Vélez Sarsfield','newells':'Newell\'s Old Boys','independiente':'Club Atlético Independiente'};
 
-var CLUB_TYPES=['Q476028','Q847017'];
 var LOADED={},FAILED={},PENDING={},uploadFor=null;
 function norm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
 function canonicalKey(t){var k=norm(t);return norm(ALIAS[k]||t);}
@@ -271,49 +270,24 @@ function probe(u){
     im.src=u;
   });
 }
-function wd(params){
-  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
-  return fetch('https://www.wikidata.org/w/api.php?format=json&origin=*&'+q).then(function(r){return r.json();});
-}
-function pickLogo(claims){
-  var best=null, score=-99;
-  claims.forEach(function(c){
-    var v=c.mainsnak&&c.mainsnak.datavalue&&c.mainsnak.datavalue.value; if(typeof v!=='string') return;
-    var sc=(c.rank==='preferred'?4:(c.rank==='deprecated'?-9:2))+((c.qualifiers&&c.qualifiers.P582)?-1:1);
-    if(sc>score){score=sc; best=v;}
-  });
-  return best;
-}
-function searchWd(q,lang){
-  return wd({action:'wbsearchentities',search:q,language:lang,uselang:lang,type:'item',limit:8}).then(function(j){
-    var ids=(j.search||[]).map(function(x){return x.id;}); if(!ids.length) return '';
-    return wd({action:'wbgetentities',ids:ids.join('|'),props:'claims'}).then(function(e){
-      for(var i=0;i<ids.length;i++){
-        var en=e.entities&&e.entities[ids[i]]; if(!en||!en.claims) continue;
-        var inst=(en.claims.P31||[]).map(function(c){var v=c.mainsnak&&c.mainsnak.datavalue&&c.mainsnak.datavalue.value; return v&&v.id;});
-        if(!inst.some(function(id){return CLUB_TYPES.indexOf(id)>=0;})) continue;
-        var f=en.claims.P154?pickLogo(en.claims.P154):null;
-        if(f) return 'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(f)+'?width=96';
-      }
-      return '';
-    });
-  });
-}
 function apiFootballLogo(name){
   return fetch('/api/team-logo?search='+encodeURIComponent(name))
     .then(function(r){var fromCache=r.headers.get('x-vercel-cache')==='HIT';return r.json().then(function(data){if(!fromCache&&data&&data.quota&&isFinite(data.quota.remaining)&&isFinite(data.quota.limit)){var next={remaining:Number(data.quota.remaining),limit:Number(data.quota.limit),updatedAt:new Date().toISOString()};if(!S.apiQuota||S.apiQuota.remaining!==next.remaining||S.apiQuota.limit!==next.limit){S.apiQuota=next;schedulePublish();}}return r.ok&&data&&typeof data.logo==='string'?data.logo:'';});})
     .catch(function(){return '';});
 }
-function logoCache(){if(!S.logoCache||typeof S.logoCache!=='object')S.logoCache={};return S.logoCache;}function logoCacheDisabled(){if(!S.logoCacheDisabled||typeof S.logoCacheDisabled!=='object')S.logoCacheDisabled={};return S.logoCacheDisabled;}function lookupLogo(name){
+function logoCache(){if(!S.logoCache||typeof S.logoCache!=='object')S.logoCache={};return S.logoCache;}
+function logoCacheDisabled(){if(!S.logoCacheDisabled||typeof S.logoCacheDisabled!=='object')S.logoCacheDisabled={};return S.logoCacheDisabled;}
+function isApiFootballLogo(url){
+  if(typeof url!=='string') return false;
+  try{var parsed=new URL(url);return parsed.protocol==='https:'&&parsed.hostname==='media.api-sports.io'&&parsed.pathname.indexOf('/football/teams/')===0;}catch(e){return false;}
+}
+function lookupLogo(name){
   var raw=norm(name); if(!raw) return Promise.resolve('');
   if(NATIONS[raw]) return Promise.resolve('https://flagcdn.com/w80/'+NATIONS[raw]+'.png');
   var key=canonicalKey(name),cache=logoCache(),disabled=logoCacheDisabled();
-  if(!disabled[key]&&validLogo(cache[key])) return Promise.resolve(cache[key]);
+  if(!disabled[key]&&isApiFootballLogo(cache[key])) return Promise.resolve(cache[key]);
   var q=ALIAS[raw]||name;
-  return apiFootballLogo(q).then(function(u){
-    if(u) return u;
-    return searchWd(q,'en').then(function(w){return w||(ALIAS[raw]?'':searchWd(q,'es'));});
-  }).catch(function(){return '';});
+  return apiFootballLogo(q).then(function(u){return isApiFootballLogo(u)?u:'';}).catch(function(){return '';});
 }
 function findLogo(id,team,quiet){
   return lookupLogo(team).then(function(u){return u?probe(u).then(function(ok){return ok?u:'';}):'';}).then(function(u){
@@ -324,7 +298,9 @@ function findLogo(id,team,quiet){
   });
 }
 function needsLogoLookup(p){
-  return !!p.team && (!p.logo || /^https:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\//.test(p.logo));
+  if(!p.team||NATIONS[norm(p.team)]) return false;
+  if(typeof p.logo==='string'&&p.logo.indexOf('data:image/')===0) return false;
+  return !isApiFootballLogo(p.logo);
 }
 function findMissingLogos(){
   var todo=S.players.filter(needsLogoLookup);
