@@ -923,3 +923,9 @@ main.wrap:has(.champion-list)>h2{display:none}
 .champ-crop-toggle,.champ-crop-reset{min-height:30px;padding:3px 10px;border:1px solid #b99552;border-radius:3px;background:#17213a;color:#f8efd9;font:600 .82rem var(--font-display);cursor:pointer}
 .champion-manage button{border-color:#b8a57e;background:#e8dfcd;color:#26324b}.champion-manage button:last-child{color:#8d3d37}.champion-manage span{color:#27324a}
 </style>
+<style>
+/* Tarjetas un poco mas angostas y un marco de foto mas cercano a la proporcion del retrato. */
+.champion-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),350px))}
+.champion-card{max-width:350px}
+.champion-photo{aspect-ratio:1.1/1}
+@media(max-width:480px){.champion-list{grid-template-columns:minmax(0,350px)}.champion-card{max-width:350px}}</style>
