@@ -577,7 +577,7 @@ function jugadoresView(){
   var dl='<datalist id="teams">'+TEAMS.map(function(t){return '<option value="'+esc(t)+'">';}).join('')+'</datalist>';
   var acts='';
   if(EDIT){
-    acts='<div class="acts"><button class="btn pri" data-act="add"'+(n>=16?' disabled':'')+'>Agregar jugador ('+n+'/16)</button><button class="btn" data-act="findlogos"'+(missing?'':' disabled')+'>Buscar o actualizar escudos'+(missing?' ('+missing+')':'')+'</button><button class="btn" data-tab="cache">Caché de escudos</button></div>
+    acts='<div class="acts"><button class="btn pri" data-act="add"'+(n>=16?' disabled':'')+'>Agregar jugador ('+n+'/16)</button><button class="btn" data-act="findlogos"'+(missing?'':' disabled')+'>Buscar o actualizar escudos'+(missing?' ('+missing+')':'')+'</button><button class="btn" data-tab="cache">Caché de escudos</button></div>'
       +'<p class="hint">Al elegir un equipo se busca el escudo solo (las selecciones muestran su bandera). Si no aparece o es otro, tocá el recuadro del escudo y subí una imagen.</p>'
       +'<div class="acts"><label for="qsel">Clasifican a la fase final</label><select id="qsel" data-act="q" style="max-width:360px"'+(koStarted?' disabled':'')+'><option value="4"'+(S.q===4?' selected':'')+'>Los 4 primeros (semifinales y final)</option><option value="8"'+(S.q===8?' selected':'')+'>Los 8 primeros (cuartos, semifinales y final)</option></select></div>'
       +(koStarted?'<p class="hint">Ya hay resultados de eliminatorias. Para cambiar cuántos clasifican, primero reiniciá los resultados.</p>':'')
