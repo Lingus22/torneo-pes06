@@ -189,7 +189,7 @@ select option{background:#0A1848;color:var(--ink)}
 .pt .nm{display:block}
 .match .p.a .pl{flex-direction:row-reverse}
 .match .p.a .pt{text-align:right}
-.crest{--s:28px;flex:none;display:inline-grid;place-items:center;box-sizing:border-box;width:var(--s);height:var(--s);padding:calc(var(--s) * .1);border-radius:4px;background:rgba(255,255,255,.93) no-repeat center;background-origin:content-box;background-size:contain;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.crest{--s:34px;flex:none;display:inline-grid;place-items:center;box-sizing:border-box;width:var(--s);height:var(--s);padding:0;border-radius:0;background-color:transparent;background-repeat:no-repeat;background-position:center;background-origin:border-box;background-size:contain;box-shadow:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
 .crest i{font-family:var(--font-display);font-weight:800;font-style:italic;font-size:calc(var(--s) * .42);line-height:1;color:#2B4A8F}
 .crest.empty{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--line)}
 .tcell{display:flex;align-items:center;gap:8px;min-width:0}
@@ -477,7 +477,7 @@ function pending(){
 }
 
 function nameHtml(id){var p=P(id);return '<span class="pl">'+crest(p)+'<span class="pt"><span class="nm">'+esc(p.name)+'</span>'+(p.team?'<span class="tm">'+esc(p.team)+'</span>':'')+'</span></span>';}
-function inline(id){var p=P(id);return '<span class="il">'+crest(p,22)+'<b>'+esc(p.name)+'</b>'+(p.team?' <span class="tm" style="display:inline">('+esc(p.team)+')</span>':'')+'</span>';}
+function inline(id){var p=P(id);return '<span class="il">'+crest(p,26)+'<b>'+esc(p.name)+'</b>'+(p.team?' <span class="tm" style="display:inline">('+esc(p.team)+')</span>':'')+'</span>';}
 
 function scoreInput(id,i,val,label,extra){
   return '<input class="sc" id="'+id+'" type="number" inputmode="numeric" min="0" max="99" step="1" value="'+(val==null?'':val)+'" aria-label="'+esc(label)+'" '+extra+'>';
@@ -576,7 +576,7 @@ function jugadoresView(){
   var missing=S.players.filter(needsLogoLookup).length;
   var rows=S.players.map(function(p,i){
     var dup=p.team&&counts[p.team.trim().toLowerCase()]>1;
-    if(!EDIT) return '<div class="prow"><span class="n">'+(i+1)+'</span><div class="tx"><span class="nm">'+esc(p.name)+'</span></div><div class="tx"><span class="tcell">'+crest(p,28)+'<span>'+(p.team?esc(p.team):'<span class="ph">Equipo sin elegir</span>')+(dup?'<span class="dup">Repetido</span>':'')+'</span></span></div><div></div></div>';
+    if(!EDIT) return '<div class="prow"><span class="n">'+(i+1)+'</span><div class="tx"><span class="nm">'+esc(p.name)+'</span></div><div class="tx"><span class="tcell">'+crest(p,34)+'<span>'+(p.team?esc(p.team):'<span class="ph">Equipo sin elegir</span>')+(dup?'<span class="dup">Repetido</span>':'')+'</span></span></div><div></div></div>';
     var act=removeId===p.id
       ?'<button class="btn dng" data-act="remove-yes" data-pid="'+p.id+'">Confirmar</button>'
       :'<button class="btn" data-act="remove" data-pid="'+p.id+'" aria-label="Quitar a '+esc(p.name)+'">Quitar</button>';
