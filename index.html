@@ -199,7 +199,14 @@ select option{background:#0A1848;color:var(--ink)}
 .crestbtn::after{content:"+";position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:700 13px/16px var(--font-display);text-align:center}
 .il{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;flex:0 1 auto}
 .il b{white-space:nowrap}
-.next .vsl{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;overflow-wrap:normal}
+.next .vsl{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:4px 12px;overflow-wrap:normal}
+.next-home{justify-self:end}.next-away{justify-self:start}
+.next-side{display:flex;align-items:center;gap:8px;min-width:0}
+.next-side-copy{min-width:0;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+.next-side-copy b{white-space:normal;overflow-wrap:anywhere}
+.next-side-copy small{color:var(--muted);font-size:.85rem;overflow-wrap:anywhere}
+.next-vs{font-weight:700;color:var(--glow);text-align:center}
+@media(max-width:620px){.next li{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}.next .vsl{grid-template-columns:minmax(0,1fr);gap:5px}.next-home,.next-away{justify-self:stretch}.next-side-copy{flex-direction:column;align-items:flex-start;gap:0}.next-vs{padding-left:40px}}
 .champ .crest{align-self:center;border-radius:6px}
 #toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#0B1B52;color:#fff;border:1px solid var(--accent);padding:10px 18px;border-radius:3px;font-weight:600;z-index:20;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
 [hidden]{display:none!important}
@@ -504,10 +511,14 @@ function champHtml(){
   return '<div class="champ">'+crest(P(f.winner),64)+'<span class="k">Campeón</span><span class="n">'+esc(P(f.winner).name)+'</span>'+(tm?'<span class="t">'+esc(tm)+'</span>':'')+'<span class="pod">'+pod+'</span></div>';
 }
 
+function nextSideHtml(id){
+  var p=P(id);
+  return '<span class="next-side">'+crest(p,32)+'<span class="next-side-copy"><b>'+esc(p.name)+'</b>'+(p.team?'<small>'+esc(p.team)+'</small>':'')+'</span></span>';
+}
 function nextHtml(){
   var items=pending(); if(!items.length) return '';
   var show=items.slice(0,4).map(function(it){
-    return '<li><span class="tag">'+esc(it.tag)+'</span><span class="vsl">'+inline(it.a)+' vs '+inline(it.b)+'</span></li>';
+    return '<li><span class="tag">'+esc(it.tag)+'</span><span class="vsl"><span class="next-home">'+nextSideHtml(it.a)+'</span><span class="next-vs">VS</span><span class="next-away">'+nextSideHtml(it.b)+'</span></span></li>';
   }).join('');
   return '<div class="next"><h3>Próximos partidos</h3><ol>'+show+'</ol>'+(items.length>4?'<div class="more">y '+(items.length-4)+' más</div>':'')+'</div>';
 }
