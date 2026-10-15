@@ -789,4 +789,28 @@ if(CFG_OK){
 })();
 </script>
 </body>
+<style>
+/* Marcos de campeones: retratos verticales con moldura dorada clásica. */
+.champion-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),310px));justify-content:center;align-items:start;gap:28px;margin:20px auto 30px}
+.champion-card{position:relative;display:flex;flex-direction:column;gap:0;width:100%;max-width:310px;min-height:0;margin:18px auto;padding:12px;overflow:visible;border:0;border-radius:2px;background:linear-gradient(145deg,#b98527 0%,#f4d77c 8%,#4c2c10 12%,#d5a63e 17%,#101c3c 22%,#09152f 100%);box-shadow:0 15px 32px rgba(0,0,0,.48),0 0 0 1px #231608}
+.champion-card:before{content:"";position:absolute;inset:4px;z-index:2;border:4px double #d2a342;border-radius:1px;box-shadow:inset 0 0 0 2px rgba(20,12,4,.8),inset 0 0 16px rgba(255,210,100,.18);pointer-events:none}
+.champion-card:after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,#f7dc8a,#633b12 6%,transparent 11%,transparent 89%,#633b12 94%,#f7dc8a),linear-gradient(180deg,#f7dc8a,#633b12 5%,transparent 10%,transparent 90%,#633b12 95%,#f7dc8a);opacity:.78}
+.champion-photo{position:relative;display:grid;place-items:center;width:100%;min-height:0;aspect-ratio:4/5;overflow:hidden;border:7px ridge #b78328;border-radius:0;outline:1px solid #130d05;outline-offset:-9px;background:radial-gradient(ellipse at 50% 35%,rgba(182,205,245,.2),transparent 62%),linear-gradient(180deg,#142952,#07132f 78%,#050d22);box-shadow:inset 0 0 0 2px #261708,inset 0 0 25px rgba(0,0,0,.45)}
+.champion-photo-silhouette{background:radial-gradient(ellipse at 50% 35%,rgba(198,214,242,.28) 0 15%,transparent 16%),radial-gradient(ellipse at 50% 108%,rgba(198,214,242,.25) 0 38%,transparent 39%)}
+.champion-photo-label{margin-bottom:13px;padding:4px 10px;border:1px solid rgba(242,205,116,.68);border-radius:0;background:rgba(5,13,34,.88);color:#f0d384;font:700 .76rem var(--font-display);letter-spacing:.12em}
+.champion-content{align-self:stretch;min-width:0;padding:14px 8px 10px;text-align:center}
+.champion-edition{padding:4px 11px;border-color:rgba(255,211,112,.72);border-radius:0;color:#ffdf92;background:linear-gradient(180deg,rgba(156,102,24,.36),rgba(15,25,50,.72));letter-spacing:.11em}
+.champion-overline{margin-top:12px;color:#d3b66c;font-size:.72rem;letter-spacing:.2em}
+.champion-name{margin-top:5px;font-size:clamp(1.55rem,4vw,2rem);line-height:1;text-wrap:balance}
+.champion-team-label{margin-top:14px;color:#d3b66c;letter-spacing:.18em}
+.champion-team{justify-content:center;gap:10px;margin-top:5px}
+.champion-crest{width:42px;height:42px}
+.champion-crest.missing{border:1px solid rgba(255,211,112,.35);border-radius:50%;color:#f5d68c;background:radial-gradient(circle,#25365b,#0b1732)}
+.champion-result{margin-top:10px}
+.champion-card.current{border-color:transparent;background:linear-gradient(145deg,#42a3c8,#c3ebfa 8%,#154b70 12%,#d2a342 17%,#101c3c 22%,#09152f 100%)}
+.champion-card.current:before{border-color:#82d5f2;box-shadow:inset 0 0 0 2px rgba(20,12,4,.8),inset 0 0 16px rgba(92,200,255,.2)}
+.champion-card.current:after{background:linear-gradient(90deg,#b5eaf8,#24627f 6%,transparent 11%,transparent 89%,#24627f 94%,#b5eaf8),linear-gradient(180deg,#b5eaf8,#24627f 5%,transparent 10%,transparent 90%,#24627f 95%,#b5eaf8)}
+.champion-card.current .champion-edition{color:#a9e9ff;border-color:rgba(117,218,255,.68);background:linear-gradient(180deg,rgba(35,108,148,.38),rgba(15,25,50,.72))}
+@media(max-width:480px){.champion-list{grid-template-columns:minmax(0,310px);gap:20px}.champion-card{padding:10px}.champion-content{padding:12px 6px 8px}.champion-name{font-size:1.7rem}}
+</style>
 </html>
