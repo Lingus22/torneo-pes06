@@ -690,7 +690,7 @@ function commit(){
 }
 function tryLogin(c,silent){
   return api('rpc/verificar_clave',{method:'POST',body:JSON.stringify({p_clave:c})}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});}).then(function(x){
-    if(x.ok&&x.j===true){clave=c; EDIT=true; showLogin=false; loginErr=''; try{localStorage.setItem('pes06-clave',c);}catch(e){} render(); if(!silent) toast('Modo edición activado');}
+    if(x.ok&&x.j===true){clave=c; EDIT=true; showLogin=false; loginErr=''; try{localStorage.setItem('pes06-clave',c);}catch(e){} render(); schedulePublish(); if(!silent) toast('Modo edición activado');}
     else if(!x.ok){ if(!silent){loginErr='Error de conexión con la base: '+((x.j&&(x.j.message||x.j.hint))||'revisá el SQL y las claves'); render();} }
     else if(silent){try{localStorage.removeItem('pes06-clave');}catch(e){}}
     else{loginErr='Clave incorrecta'; render();}
