@@ -613,16 +613,17 @@ function campeonesView(){
   return '<h2>Palmarés</h2>'+(current?'<article class="champion-card current"><div class="champion-edition">Campeón de esta edición</div><div class="champion-name">'+esc(current.name)+'</div><div class="champion-team">'+esc(current.team||'')+'</div></article>':'<p class="hint">El campeón de esta edición aparecerá al completarse la final.</p>')+'<div class="champion-list">'+(rows||'<p class="hint">Todavía no hay campeones registrados.</p>')+'</div>'+(EDIT?'<div class="panel"><h2>Agregar campeón</h2><div class="champ-form"><input id="champ-edition" type="text" placeholder="Edición o año" maxlength="40"><input id="champ-name" type="text" placeholder="Nombre del campeón" maxlength="60"><input id="champ-team" type="text" placeholder="Equipo" maxlength="60"><input id="champ-result" type="text" placeholder="Resultado de la final (opcional)" maxlength="80"><button class="btn pri" data-act="champ-add">Guardar campeón</button></div></div>':'');
 }
 function render(){
+  if(!EDIT&&tab==='cache') tab='grupos';
   K=computeKO(); preloadLogos();
   var ae=document.activeElement, fid=(ae&&ae.id&&app.contains(ae))?ae.id:null;
   var gp=groupTotals('A');
   var played=gp.played, tot=gp.tot;
   var kd=KO.filter(function(m){return (m.id!=='third'||S.third)&&K[m.id].winner;}).length, kt=KO.filter(function(m){return m.id!=='third'||S.third;}).length;
-  var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():tab==='cache'?cacheView():tab==='campeones'?campeonesView():gruposView();
-  var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores'],['cache','Caché'],['campeones','Campeones']].map(function(t){
+  var view=tab==='llaves'?llavesView():tab==='jugadores'?jugadoresView():tab==='cache'&&EDIT?cacheView():tab==='campeones'?campeonesView():gruposView();
+  var tabs=[['grupos','Tabla'],['llaves','Llaves'],['jugadores','Jugadores'],['cache','Caché'],['campeones','Campeones']].filter(function(t){return EDIT||t[0]!=='cache';}).map(function(t){
     return '<button data-tab="'+t[0]+'"'+(tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>';
   }).join('');
-  app.innerHTML='<style>'+crestCss()+'</style><header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores, todos contra todos. Clasifican '+S.q+'. Partido único.</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span><span class="chip">'+(S.apiQuota?'API '+S.apiQuota.remaining+'/'+S.apiQuota.limit+' disp.':'API sin dato')+'</span><span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
+  app.innerHTML='<style>'+crestCss()+'</style><header class="top"><div class="wrap"><h1>Torneo PES 06</h1><p class="meta">'+S.players.length+' jugadores, todos contra todos. Clasifican '+S.q+'. Partido único.</p><div class="hrow"><span class="chip">Grupo '+played+'/'+tot+'</span><span class="chip">Llaves '+kd+'/'+kt+'</span>'+(EDIT?'<span class="chip">'+(S.apiQuota?'API '+S.apiQuota.remaining+'/'+S.apiQuota.limit+' disp.':'API sin dato')+'</span>':'')+'<span class="chip'+(EDIT?' on':'')+'">'+(EDIT?'Modo edición':'Solo lectura')+'</span>'+(CFG_OK?(EDIT?'<button class="chip chipbtn" data-act="logout">Salir de edición</button>':'<button class="chip chipbtn" data-act="login">Soy editor</button>'):'')+'<span id="status" class="meta" style="margin:0"></span></div>'+loginHtml()+'</div></header>'
     +'<nav class="tabs"><div class="wrap">'+tabs+'</div></nav><main class="wrap">'+view+'</main>';
   if(fid){var el=document.getElementById(fid); if(el){try{el.focus({preventScroll:true});}catch(e){}}}
 }
