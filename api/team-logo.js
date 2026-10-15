@@ -21,9 +21,17 @@ module.exports = async function handler(req, res) {
     const teams = Array.isArray(data?.response) ? data.response : [];
     const normalize = (value) => String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
     const query = normalize(search);
-    const exact = teams.find((item) => normalize(item?.team?.name) === query);
-    const startsWith = teams.find((item) => normalize(item?.team?.name).startsWith(query));
-    const team = (exact || startsWith || teams[0])?.team;
+    const words = query.split(" ").filter((word) => word.length > 1);
+    const ranked = teams
+      .filter((item) => item?.team?.name && item?.team?.logo)
+      .map((item) => {
+        const name = normalize(item.team.name);
+        const hasAllWords = words.length > 0 && words.every((word) => name.includes(word));
+        const score = name === query ? 100 : name.startsWith(query) ? 80 : hasAllWords ? 60 : 0;
+        return { item, score };
+      })
+      .sort((a, b) => b.score - a.score);
+    const team = ranked[0]?.score > 0 ? ranked[0].item.team : null;
     if (!team?.name || !team?.logo) return res.status(404).json({ error: "not_found", quota });
     const logoUrl = new URL(team.logo);
     if (logoUrl.protocol !== "https:" || logoUrl.hostname !== "media.api-sports.io") return res.status(502).json({ error: "invalid_logo_url", quota });
