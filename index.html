@@ -965,6 +965,13 @@ main.wrap:has(.champion-list)>h2{display:none}
 .champion-card,.champion-card.current{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(var(--sc,1));transition:transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .champion-card.tilting{--sc:1.04;z-index:5;transition:transform .1s ease-out}
 .cc-face:after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;opacity:var(--glare,0);transition:opacity .3s;background:radial-gradient(circle at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.26),transparent 48%),linear-gradient(112deg,transparent 35%,rgba(255,236,170,.2) 48%,rgba(255,255,255,.14) 52%,transparent 65%);background-size:100% 100%,260% 100%;background-position:0 0,calc(var(--mx,.5) * 100%) 0}
+/* Destello periodico en diagonal (esquina superior izquierda -> inferior derecha), escalonado entre tarjetas. */
+.cc-face:before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(135deg,transparent 43%,rgba(255,205,100,.2) 47.5%,rgba(255,255,255,.55) 50%,rgba(255,205,100,.2) 52.5%,transparent 57%);background-size:300% 300%;background-position:100% 100%;animation:ccSweep 6s ease-in-out infinite}
+.champion-card.current .cc-face:before{background-image:linear-gradient(135deg,transparent 43%,rgba(92,200,255,.24) 47.5%,rgba(255,255,255,.55) 50%,rgba(92,200,255,.24) 52.5%,transparent 57%)}
+.champion-card:nth-child(3n+2) .cc-face:before{animation-delay:2s}
+.champion-card:nth-child(3n+3) .cc-face:before{animation-delay:4s}
+@keyframes ccSweep{0%{background-position:100% 100%}22%,100%{background-position:0% 0%}}
+@media(prefers-reduced-motion:reduce){.cc-face:before{animation:none;opacity:0}}
 @media(prefers-reduced-motion:reduce){.champion-card,.champion-card.current{transition:none}}
 /* La foto (4:5) llena el marco: el zoom no baja de 100% y el desplazamiento horizontal nunca deja ver el borde de la foto. */
 .champion-photo-img{transform:translate(clamp(calc((1 - var(--champion-zoom,1)) * 50%),var(--champion-x,0%),calc((var(--champion-zoom,1) - 1) * 50%)),var(--champion-y,0%)) scale(var(--champion-zoom,1))}
