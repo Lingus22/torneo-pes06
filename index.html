@@ -811,6 +811,27 @@ document.getElementById('champion-photo-file').addEventListener('change',functio
 app.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target.id==='clave'&&e.target.value.trim()) tryLogin(e.target.value.trim());
 });
+/* Inclinacion 3D de las tarjetas de campeones (solo con mouse; se desactiva con "reducir movimiento"). */
+(function(){
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,cur=null;
+  function rest(c){if(!c)return;c.classList.remove('tilting');c.style.setProperty('--rx','0deg');c.style.setProperty('--ry','0deg');c.style.setProperty('--glare','0');}
+  app.addEventListener('pointermove',function(e){
+    if(reduce||e.pointerType==='touch')return;
+    var c=e.target.closest?e.target.closest('.champion-card'):null;
+    if(c!==cur){rest(cur);cur=c;}
+    if(!c)return;
+    if(e.target.closest('button,input,label,select')){rest(c);return;}
+    var r=c.getBoundingClientRect(),x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+    c.classList.add('tilting');
+    c.style.setProperty('--ry',((x-.5)*16).toFixed(2)+'deg');
+    c.style.setProperty('--rx',((.5-y)*14).toFixed(2)+'deg');
+    c.style.setProperty('--mx',x.toFixed(3));
+    c.style.setProperty('--gx',(x*100).toFixed(1)+'%');
+    c.style.setProperty('--gy',(y*100).toFixed(1)+'%');
+    c.style.setProperty('--glare','1');
+  });
+  app.addEventListener('pointerleave',function(){rest(cur);cur=null;});
+})();
 app.addEventListener('input',function(e){var t=e.target;if(!EDIT||!t.dataset.crop)return;var card=t.closest('.champion-card'),img=card&&card.querySelector('.champion-photo-img');if(!img)return;if(t.dataset.crop==='zoom')img.style.setProperty('--champion-zoom',String(Number(t.value)/100));else if(t.dataset.crop==='x')img.style.setProperty('--champion-x',String(Number(t.value))+'%');else img.style.setProperty('--champion-y',String(Number(t.value))+'%');var label=t.parentElement.querySelector('span');if(label)label.textContent=t.dataset.crop==='zoom'?t.value+'%':t.value+'%';});
 app.addEventListener('change',function(e){
   var t=e.target; if(!EDIT) return;
@@ -940,6 +961,11 @@ main.wrap:has(.champion-list)>h2{display:none}
 .champion-photo:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 46px rgba(130,98,44,.2)}
 .champion-card .champion-photo .champion-edition,.champion-card.current .champion-photo .champion-edition{position:absolute;z-index:3;top:12px;left:0;margin:0;padding:5px 20px 5px 12px;border:0;color:#10204a;font:800 .8rem var(--font-display);letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(180deg,var(--cc-soft),var(--cc));clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
 .champion-photo-button{bottom:30px}
+/* Efecto 3D: la tarjeta se inclina hacia donde esta el mouse y un brillo la recorre. */
+.champion-card,.champion-card.current{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(var(--sc,1));transition:transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.champion-card.tilting{--sc:1.04;z-index:5;transition:transform .1s ease-out}
+.cc-face:after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;opacity:var(--glare,0);transition:opacity .3s;background:radial-gradient(circle at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.26),transparent 48%),linear-gradient(112deg,transparent 35%,rgba(255,236,170,.2) 48%,rgba(255,255,255,.14) 52%,transparent 65%);background-size:100% 100%,260% 100%;background-position:0 0,calc(var(--mx,.5) * 100%) 0}
+@media(prefers-reduced-motion:reduce){.champion-card,.champion-card.current{transition:none}}
 /* La foto (4:5) llena el marco: el zoom no baja de 100% y el desplazamiento horizontal nunca deja ver el borde de la foto. */
 .champion-photo-img{transform:translate(clamp(calc((1 - var(--champion-zoom,1)) * 50%),var(--champion-x,0%),calc((var(--champion-zoom,1) - 1) * 50%)),var(--champion-y,0%)) scale(var(--champion-zoom,1))}
 .champion-photo-label{margin-bottom:34px}
