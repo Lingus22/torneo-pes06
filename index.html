@@ -364,10 +364,10 @@ var app=document.getElementById('app');
 var S=loadState();
 var K={};
 var EDIT=false, tab='grupos', confirmReset=false, removeId=null;
-var ver=0, dirty=false, saving=false, again=false, showLogin=false, loginErr='', clave='', pubTimer=null;
+var remoteEmpty=false, ver=0, dirty=false, saving=false, again=false, showLogin=false, loginErr='', clave='', pubTimer=null;
 var CFG_OK=/^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(window.SUPABASE_URL||'')&&!!window.SUPABASE_KEY&&!/TU_/.test(window.SUPABASE_KEY);
 try{ tab=(location.hash||'').slice(1)||sessionStorage.getItem('pes06-tab')||'grupos'; }catch(e){}
-if(['grupos','llaves','jugadores','cache','campeones'].indexOf(tab)<0) tab='grupos';
+if(['grupos','tabla','llaves','jugadores','cache','campeones'].indexOf(tab)<0) tab='grupos';
 
 function loadState(){
   try{ var s=JSON.parse(document.getElementById('app-state').textContent); if(s&&s.players&&s.players.length) return migrate(s); }catch(e){}
@@ -550,7 +550,7 @@ function koCard(r){
     }
     return '<div class="side'+(r.winner&&r.winner===sl.id?' win':'')+'"><span class="seed">'+esc(sl.seed)+'</span><div>'+nm+'</div><div>'+goal+'</div><div class="pe">'+pe+'</div></div>';
   }).join('');
-  return '<article class="kocard'+(tie?' tie':'')+'" data-kocard="'+m.id+'"><div class="kohead"><span>'+m.label+'</span><span>'+state+'</span></div>'+sides+(tie?'<div class="pens-h">Empate: cargá los penales de cada uno.</div>':'')+(r.stale?'<div class="note">El cruce cambió y se descartó el resultado anterior.</div>':'')+'</article>';
+  return '<article class="kocard'+(tie?' tie':'')+'" data-kocard="'+m.id+'"><div class="kohead"><span>'+m.label+'</span><span>'+state+'</span></div>'+sides+(tie&&!r.winner?'<div class="pens-h">Empate: cargá los penales de cada uno.</div>':'')+(r.stale?'<div class="note">El cruce cambió y se descartó el resultado anterior.</div>':'')+'</article>';
 }
 
 function llavesView(){
@@ -700,6 +700,7 @@ function fetchRemote(force){
   if(!CFG_OK) return Promise.resolve();
   return api('torneo?id=eq.1&select=version,data').then(function(r){return r.json();}).then(function(rows){
     var row=Array.isArray(rows)&&rows[0]; if(!row) return;
+    remoteEmpty=!(row.data&&row.data.players&&row.data.players.length);
     if(row.version===ver&&!force) return;
     var ae=document.activeElement;
     var typing=ae&&ae.tagName==='INPUT'&&app.contains(ae);
@@ -755,7 +756,7 @@ function commit(){
 }
 function tryLogin(c,silent){
   return api('rpc/verificar_clave',{method:'POST',body:JSON.stringify({p_clave:c})}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});}).then(function(x){
-    if(x.ok&&x.j===true){clave=c; EDIT=true; showLogin=false; loginErr=''; try{localStorage.setItem('pes06-clave',c);}catch(e){} render(); schedulePublish(); if(!silent) toast('Modo edición activado');}
+    if(x.ok&&x.j===true){clave=c; EDIT=true; showLogin=false; loginErr=''; try{localStorage.setItem('pes06-clave',c);}catch(e){} render(); if(remoteEmpty) schedulePublish(); if(!silent) toast('Modo edición activado');}
     else if(!x.ok){ if(!silent){loginErr='Error de conexión con la base: '+((x.j&&(x.j.message||x.j.hint))||'revisá el SQL y las claves'); render();} }
     else if(silent){try{localStorage.removeItem('pes06-clave');}catch(e){}}
     else{loginErr='Clave incorrecta'; render();}
